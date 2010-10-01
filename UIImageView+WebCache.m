@@ -42,7 +42,16 @@
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
-    self.image = image;
+    [UIView animateWithDuration:.25 animations:^{
+        self.alpha = 0;
+    } completion:^(BOOL finished)
+    {
+        self.image = image;
+        
+        [UIView animateWithDuration:.25 animations:^{
+            self.alpha = 1;
+        }];
+    }];
 }
 
 @end
