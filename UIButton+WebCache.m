@@ -6,9 +6,10 @@
  * file that was distributed with this source code.
  */
 
-#import "UIImageView+WebCache.h"
+#import "UIButton+WebCache.h"
+#import "SDWebImageManager.h"
 
-@implementation UIImageView (WebCache)
+@implementation UIButton (WebCache)
 
 - (void)setImageWithURL:(NSURL *)url
 {
@@ -17,21 +18,16 @@
 
 - (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder
 {
-    [self setImageWithURL:url placeholderImage:placeholder options:0];
-}
-
-- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(SDWebImageOptions)options
-{
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
 
     // Remove in progress downloader from queue
     [manager cancelForDelegate:self];
 
-    self.image = placeholder;
+    [self setImage:placeholder forState:UIControlStateNormal];
 
     if (url)
     {
-        [manager downloadWithURL:url delegate:self options:options];
+        [manager downloadWithURL:url delegate:self];
     }
 }
 
@@ -42,16 +38,7 @@
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
-    [UIView animateWithDuration:.25 animations:^{
-        self.alpha = 0;
-    } completion:^(BOOL finished)
-    {
-        self.image = image;
-        
-        [UIView animateWithDuration:.25 animations:^{
-            self.alpha = 1;
-        }];
-    }];
+    [self setImage:image forState:UIControlStateNormal];
 }
 
 @end
