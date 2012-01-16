@@ -7,8 +7,27 @@
  */
 
 #import "UIImageView+WebCache.h"
+#import <objc/runtime.h>
+
+typedef enum {
+    SDUIImageViewTransitionOptionNone               = 0,
+    SDUIImageViewTransitionOptionFade               = 1 << 0,
+    SDUIImageViewTransitionOptionHorizontalFlip     = 1 << 1
+} SDWebimageUIImageViewTransitionOption;
+
 
 @implementation UIImageView (WebCache)
+
+- (void) setDownloadImageTransitionOptions:(NSUInteger)options;
+{
+    objc_setAssociatedObject(self, @"downloadTransitionOption", [NSNumber numberWithUnsignedInteger:options], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSUInteger) downloadImageTransitionOptions;
+{
+    NSNumber *options = objc_getAssociatedObject(self, @"downloadTransitionOption");
+    return [options unsignedIntegerValue];
+}
 
 - (void)setImageWithURL:(NSURL *)url
 {
@@ -42,16 +61,25 @@
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
-    [UIView animateWithDuration:.25 animations:^{
-        self.alpha = 0;
-    } completion:^(BOOL finished)
+    NSUInteger options = self.downloadImageTransitionOptions;
+    
+    if ((options & SDUIImageViewTransitionOptionNone) == 0)
     {
         self.image = image;
-        
+    }
+    else if (options & SDUIImageViewTransitionOptionFade)
+    {        
         [UIView animateWithDuration:.25 animations:^{
-            self.alpha = 1;
+            self.alpha = 0;
+        } completion:^(BOOL finished)
+        {
+            self.image = image;
+            
+            [UIView animateWithDuration:.25 animations:^{
+                self.alpha = 1;
+            }];
         }];
-    }];
+    }
 }
 
 @end

@@ -49,4 +49,8 @@
  */
 - (void)cancelCurrentImageLoad;
 
+
+@property (nonatomic, assign) NSUInteger downloadImageTransitionOptions;
+
+
 @end
